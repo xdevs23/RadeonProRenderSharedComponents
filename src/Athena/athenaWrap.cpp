@@ -210,10 +210,19 @@ AthenaStatus athenaUpload(std::wstring& sendFile, wchar_t* fileExtension, std::w
 	return successFlag;
 }
 
+const std::string awsDisablingEnvVarName = "RPR_DEV_DISABLE_STATISTICS";
+
 bool AthenaWrapper::AthenaSendFile(std::function<int(std::string)>& actionFunc)
 {
 	// athena disabled by ui => return
 	if (!m_isEnabled)
+		return true;
+
+	// athena disabled by environment var => return
+	char* pEnv;
+	pEnv = getenv(awsDisablingEnvVarName.c_str());
+	bool found = pEnv != nullptr;
+	if (found && ((pEnv != "False") && (pEnv != "0")))
 		return true;
 
 	// back-off if not inited
